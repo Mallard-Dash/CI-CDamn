@@ -1,0 +1,41 @@
+# .github/workflows/ci.yml
+
+name: CI Pipeline
+
+# Kör denna workflow på VARJE Pull Request till main-branchen
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Kör på en "tråkig" Linux-server
+
+    steps:
+      # Steg 1: Checka ut koden från PR:en
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Steg 2: Sätt upp Python-miljön
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' 
+
+      # Steg 3: Installera alla bibliotek
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pytest  # Installera test- och lint-verktyg
+
+      # Steg 4: KÖR LINTERN (Ditt automatiska "öga för detaljer")
+      # Detta kollar kod-stil (t.ex. felaktig indentering)
+      - name: Lint with flake8
+        run: |
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      # Steg 5: KÖR TESTERNA
+      - name: Run Pytest
+        run: |
+          pytest
